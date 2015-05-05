@@ -254,7 +254,7 @@ class VCA(object):
 
     def get_vapps(self, vdc):
         refs = filter(lambda ref: ref.type_ == 'application/vnd.vmware.vcloud.vApp+xml', vdc.ResourceEntities.ResourceEntity)
-        for ref in refs
+        for ref in refs:
             self.response = requests.get(ref.href, headers=self.vcloud_session.get_vcloud_headers(), verify=self.verify)
             if self.response.status_code == requests.codes.ok:
                 vapp = VAPP(vAppType.parseString(self.response.content, True), self.vcloud_session.get_vcloud_headers(), self.verify)

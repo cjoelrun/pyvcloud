@@ -397,6 +397,7 @@ class VAPP(object):
                     {'network_name': connection.get_network(),
                      'ip': connection.get_IpAddress(),
                      'mac': connection.get_MACAddress(),
+                     'index':connection.get_NetworkConnectionIndex(),
                      'is_connected': connection.get_IsConnected(),
                      'is_primary': connection.get_NetworkConnectionIndex() == primary_index,
                      'allocation_mode': connection.get_IpAddressAllocationMode()

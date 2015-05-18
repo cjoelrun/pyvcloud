@@ -19,10 +19,11 @@ host = 'https://vcd02-2848639.mv.rackspace.com'
 username = "dev_pete"
 password = "p@ssw0rd"
 # instance = '28149a83-0d23-4f03-85e1-eb8be013e4ff'
+# org = 'System'
 org = 'dvc02-2848639'
 # vdc = 'bf54d657-0158-4a6b-8c4f-19e96451bebc'
 vdc_name = 'dvc02-2848639'
-template_name = 'RHEL_6.5_Unmanaged'
+template_name = 'RHEL_6.5_Managed'
 catalog = 'Rackspace Catalog'
 vapp = ''
 api = "https://vcd02-2848639.mv.rackspace.com/api/sessions"
@@ -37,46 +38,117 @@ result = vca.login(password=password, org=org)
 vca_2 = VCA(host=host, username=username, service_type='vcd', version='5.5', verify=False)
 vca_2.login(password=password, token=vca.vcloud_session.token, org=vca.vcloud_session.org, org_url=vca.vcloud_session.org_url)
 
+
 net_href = vca_2.get_network(vdc_name, network_name="ExNet-TenDot-vlan1653").get_href()
 net_href_2 = vca_2.get_network(vdc_name, network_name="ExNet-Inside-VLAN1470").get_href()
+ser_href = vca_2.get_network(vdc_name, network_name="ServiceNet-Inside-VLAN3082").get_href()
 
-
-vdc = vca_2.get_vdc(vdc_name)
-vapp = vca_2.get_vapp(vdc, 'sample-2')
-
-# vapp.disconnect_vms("ExNet-Inside-VLAN1470")
-vapp.disconnect_from_network("ExNet-Inside-VLAN1470")
-
-# vApp_task = vca_2.create_vapp(vdc_name=vdc_name, vapp_name="sample-2", template_name=template_name, catalog_name=catalog)
-#
-# print "Creating VApp"
-# vca_2.block_until_completed(vApp_task)
-
-#time.sleep(60)
-#
 # vdc = vca_2.get_vdc(vdc_name)
 # vapp = vca_2.get_vapp(vdc, 'sample-2')
+
+# vapp.disconnect_vms("ExNet-Inside-VLAN1470")
+# vapp.disconnect_from_network("ExNet-Inside-VLAN1470")
+
+# vApp_task = vca_2.create_vapp(vdc_name=vdc_name, vapp_name="sample", template_name=template_name, catalog_name=catalog)
+# #
+# print "Creating VApp"
+# vca_2.block_until_completed(vApp_task)
+#
+# #time.sleep(60)
+# #
+# vdc = vca_2.get_vdc(vdc_name)
+# vapp = vca_2.get_vapp(vdc, 'sample')
 #
 # task_1 = vapp.connect_to_network(network_name="ExNet-TenDot-vlan1653",network_href=net_href)
 #
 # print "Connecting VAPP to Network 1"
 # vca_2.block_until_completed(task_1)
-#
-# task_2 = vapp.connect_vms(network_name="ExNet-TenDot-vlan1653", connections_primary_index=0,connection_index=0, ip_allocation_mode='POOL')
+# #
+# task_2 = vapp.connect_vms(network_name="ExNet-TenDot-vlan1653", connections_primary_index=0, connection_index=0, ip_allocation_mode='POOL')
 # print "Connecting VM to Network 1"
 # vca_2.block_until_completed(task_2)
 #
-# vapp = vca_2.get_vapp(vdc, 'sample-2')
+# vapp = vca_2.get_vapp(vdc, 'sample')
+# #
+# # # time.sleep(30)
+# #
+# #
+vdc = vca_2.get_vdc(vdc_name)
+vapp = vca_2.get_vapp(vdc, 'sample')
+
+# task = vapp.disconnect_from_network('ExNet-Inside-VLAN1470')
+# vca_2.block_until_completed(task)
 #
-# # time.sleep(30)
+#
+# task_3 = vapp.connect_to_network(network_name="ServiceNet-Inside-VLAN3082",network_href=ser_href)
+# print "Connecting VAPP to Network 2"
+# vca_2.block_until_completed(task_3)
+# print "Connecting VM to Network 2"
+# task_4 = vapp.connect_vms(network_name="ServiceNet-Inside-VLAN3082", connections_primary_index=0,connection_index=0, ip_allocation_mode='POOL')
+# vca_2.block_until_completed(task_4)
+
+
+# vdc = vca_2.get_vdc(vdc_name)
+# vapp = vca_2.get_vapp(vdc, 'sample')
+#
+task_1 = vapp.disconnect_vms('ServiceNet-Inside-VLAN3082')
+vca_2.block_until_completed(task_1)
+
+task = vapp.disconnect_from_network('ServiceNet-Inside-VLAN3082')
+vca_2.block_until_completed(task)
+
+task_3 = vapp.connect_to_network(network_name="ExNet-Inside-VLAN1470",network_href=net_href_2)
+print "Connecting VAPP to Network 2"
+vca_2.block_until_completed(task_3)
+
+task_4 = vapp.connect_vms(network_name="ExNet-Inside-VLAN1470", connections_primary_index=0,connection_index=0, ip_allocation_mode='POOL')
+vca_2.block_until_completed(task_4)
+
 #
 # task_3 = vapp.connect_to_network(network_name="ExNet-Inside-VLAN1470",network_href=net_href_2)
 # print "Connecting VAPP to Network 2"
 # vca_2.block_until_completed(task_3)
 # print "Connecting VAPP to Network 2"
 # task_4 = vapp.connect_vms(network_name="ExNet-Inside-VLAN1470", connections_primary_index=0,connection_index=1, ip_allocation_mode='POOL')
-#
 # vca_2.block_until_completed(task_4)
+#
+# print vapp.get_vms_network_info()
+# # task = vapp.undeploy()
+# # # vca_2.block_until_completed(task)
+# #
+# task_1 = vapp.disconnect_vms('ExNet-Inside-VLAN1470')
+# vca_2.block_until_completed(task_1)
+# print "Disconnected from VM "
+# vapp = vca_2.get_vapp(vdc, 'sample-2')
+# task = vapp.disconnect_from_network('ExNet-Inside-VLAN1470')
+# vca_2.block_until_completed(task)
+# print "Disconnected from VAPP"
+#
+# vm_Details = vapp.get_vms_network_info()[0]
+# primary_name = None
+# for connection in vapp.get_vms_network_info()[0]:
+#     if connection['index'] != 0:
+#         print connection['network_name']
+#         task_1 = vapp.disconnect_vms(connection['network_name'])
+#         vca_2.block_until_completed(task_1)
+#         print "Disconnected from VM " + connection['network_name']
+#    #     time.sleep(60)
+#         vapp = vca_2.get_vapp(vdc, 'sample-2')
+#         task = vapp.disconnect_from_network(connection['network_name'])
+#         vca_2.block_until_completed(task)
+#         print "Disconnected from " + connection['network_name']
+#     else:
+#         primary_name = connection['network_name']
+#
+# task_1 = vapp.disconnect_vms(primary_name)
+# vca_2.block_until_completed(task_1)
+# print "Disconnected from VM " + primary_name
+#    #     time.sleep(60)
+# vapp = vca_2.get_vapp(vdc, 'sample-2')
+# task = vapp.disconnect_from_network(primary_name)
+# vca_2.block_until_completed(task)
+# print "Disconnected from " + primary_name
+# vca_2.block_until_completed(task)
 #
 # print "Power on"
 # vapp.poweron()

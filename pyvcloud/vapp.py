@@ -178,7 +178,7 @@ class VAPP(object):
                     0,
                     name_ = 'NetworkConnectionSection',
                     namespacedef_ = 'xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:vmw="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"',
-                    pretty_print = False)
+                    pretty_print = True)
                 body=output.getvalue().replace("vmw:Info", "ovf:Info")
                 self.response = requests.put(vm.get_href() + "/networkConnectionSection/", data=body, headers=self.headers, verify=self.verify)
                 if self.response.status_code == requests.codes.accepted:
@@ -189,25 +189,30 @@ class VAPP(object):
         if children:
             vms = children.get_Vm()
             for vm in vms:
-                # print vm.get_Name()
                 networkConnectionSection = [section for section in vm.get_Section() if isinstance(section, NetworkConnectionSectionType)][0]
                 link = [link for link in networkConnectionSection.get_Link() if link.get_type() == "application/vnd.vmware.vcloud.networkConnectionSection+xml"][0]
                 found = -1
+                primary = networkConnectionSection.get_PrimaryNetworkConnectionIndex()
                 for index, networkConnection in enumerate(networkConnectionSection.NetworkConnection):
                        if networkConnection.get_network() == network_name:
                             found = index
                 if found != -1:
-                    networkConnectionSection.NetworkConnection.pop(found)
+                    if networkConnectionSection.NetworkConnection[found].get_NetworkConnectionIndex() != primary:
+                        networkConnectionSection.NetworkConnection.pop(found)
+                    else:
+                        networkConnectionSection.NetworkConnection[found].set_network("None")
                     output = StringIO()
                     networkConnectionSection.export(output,
                     0,
                     name_ = 'NetworkConfigSection',
                     namespacedef_ = 'xmlns="http://www.vmware.com/vcloud/v1.5" xmlns:ovf="http://schemas.dmtf.org/ovf/envelope/1"',
-                    pretty_print = False)
+                    pretty_print = True)
                     body = output.getvalue().\
                     replace("vmw:", "").replace('Info xmlns:vmw="http://www.vmware.com/vcloud/v1.5" msgid=""', "ovf:Info").\
                     replace("/Info", "/ovf:Info")
+
                     self.response = requests.put(link.get_href(), data=body, headers=self.headers, verify=self.verify)
+
                     if self.response.status_code == requests.codes.accepted:
                         return taskType.parseString(self.response.content, True)
 
